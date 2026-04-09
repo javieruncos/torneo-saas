@@ -74,9 +74,10 @@ export const createTeam = async (data: any, file: File) => {
 
 export const getTeams = async () => {
   try {
-    const res = await fetch("/api/teams");
-    return res.json();
+    const teams = await Clubes.find();
+    return teams
   } catch (error) {
     console.log(error);
+       throw new Error("Error al obtener los equipos");
   }
 };

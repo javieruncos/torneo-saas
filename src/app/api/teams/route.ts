@@ -38,7 +38,12 @@ export const POST = async (req: Request) => {
 };
 
 export const GET = async (req: Request) => {
-  await connectDB();
-  const teams = await getTeams();
-  return Response.json(teams);
+    try {
+        await connectDB();
+        const teams = await getTeams();
+        return Response.json(teams);
+    } catch (error:any) {
+        return Response.json({ error: error.message }, { status: 500 });
+        
+    }
 };

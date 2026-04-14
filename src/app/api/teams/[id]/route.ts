@@ -1,7 +1,7 @@
 import { ParamsOf } from "./../../../../../.next/types/routes.d";
 import connectDB from "@/app/lib/db/db";
 import Clubes from "@/app/lib/models/teams.model";
-import { deleteClub, updateClub } from "@/app/lib/services/team.service";
+import { deleteClub, updateClub } from "@/app/lib/service/team.service";
 
 
 export const GET = async (

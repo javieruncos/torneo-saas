@@ -1,0 +1,53 @@
+import playerSchema from "../models/players.model";
+import Clubes from "../models/teams.model";
+
+type data = {
+  nombre: string;
+  numero: number;
+  posicion: string;
+  club: string;
+};
+
+export const createPlayer = async (data: data) => {
+  const { nombre, numero, posicion, club } = data;
+
+  if (!nombre || !numero || !posicion || !club) {
+    throw new Error("Faltan datos");
+  }
+
+  const existsClub = await Clubes.findById(club);
+
+  if (!existsClub) {
+    throw new Error("El equipo no existe");
+  }
+
+  const existsPlayer = await playerSchema.findOne({ numero, club });
+
+  if (existsPlayer) {
+    throw new Error("El jugador ya existe");
+  }
+
+  const player = await playerSchema.create(data);
+  return player;
+};
+
+export const getPlayersByClub = async (clubId: string) => {
+  if (!clubId) {
+    throw new Error("Faltan datos");
+  }
+
+  const players = await playerSchema.find({ club: clubId });
+  return players;
+};
+
+export const getPlayerById = async (id: string) => {
+  const player = await playerSchema
+    .findById(id)
+    .populate("club", "name shortname");
+
+  if (!player) {
+    throw new Error("El jugador no existe");
+  }
+
+  return player;
+};

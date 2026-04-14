@@ -1,5 +1,5 @@
 import connectDB from "@/app/lib/db/db";
-import { createTeam, getTeams } from "@/app/lib/services/team.service";
+import { createTeam, getTeams } from "@/app/lib/service/team.service";
 import { fileURLToPath } from "node:url";
 
 export const POST = async (req: Request) => {

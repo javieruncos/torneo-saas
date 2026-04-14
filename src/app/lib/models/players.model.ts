@@ -47,5 +47,9 @@ import mongoose from "mongoose";
   }
 );
 
+playerSchema.index({ club: 1, numero: 1 }, { unique: true });
 
-export default mongoose.model("Players", playerSchema);
+const Players = mongoose.model("Players", playerSchema);
+
+
+export default Players

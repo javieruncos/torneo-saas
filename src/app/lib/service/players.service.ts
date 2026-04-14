@@ -1,5 +1,6 @@
-import playerSchema from "../models/players.model";
+import Players from "../models/players.model";
 import Clubes from "../models/teams.model";
+import mongoose from "mongoose";
 
 type data = {
   nombre: string;
@@ -21,13 +22,13 @@ export const createPlayer = async (data: data) => {
     throw new Error("El equipo no existe");
   }
 
-  const existsPlayer = await playerSchema.findOne({ numero, club });
+  const existsPlayer = await Players.findOne({ numero, club });
 
   if (existsPlayer) {
     throw new Error("El jugador ya existe");
   }
 
-  const player = await playerSchema.create(data);
+  const player = await Players.create(data);
   return player;
 };
 
@@ -36,14 +37,16 @@ export const getPlayersByClub = async (clubId: string) => {
     throw new Error("Faltan datos");
   }
 
-  const players = await playerSchema.find({ club: clubId });
+  if (!mongoose.Types.ObjectId.isValid(clubId)) {
+    throw new Error("ID inválido");
+  }
+
+  const players = await Players.find({ club: clubId });
   return players;
 };
 
 export const getPlayerById = async (id: string) => {
-  const player = await playerSchema
-    .findById(id)
-    .populate("club", "name shortname");
+  const player = await Players.findById(id).populate("club", "name shortname");
 
   if (!player) {
     throw new Error("El jugador no existe");

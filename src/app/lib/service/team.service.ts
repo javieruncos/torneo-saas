@@ -1,7 +1,6 @@
-import { Team } from "@/app/types/team";
 import Clubes from "@/app/lib/models/teams.model";
 import cloudinary from "../cloudinary";
-import { Lekton, Lexend_Tera } from "next/font/google";
+
 
 export const createTeam = async (data: any, file: File) => {
   console.log("DATA EN SERVICE:", data);

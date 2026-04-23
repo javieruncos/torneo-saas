@@ -241,3 +241,44 @@ export const getTable = async () => {
 
   return result;
 };
+
+export const getTeamStats = async (teamId: string) => {
+  const matches = await Match.find({
+    status: "finished",
+    $or: [{ homeTeam: teamId }, { awayTeam: teamId }],
+  });
+
+  const stats = {
+    played: 0,
+    won: 0,
+    draw: 0,
+    lost: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    points: 0,
+  };
+
+  for (const match of matches) {
+    const isHome = match.homeTeam.toString() === teamId;
+
+    const teamGoals = isHome ? match.score.home : match.score.away;
+    const rivalGoals = isHome ? match.score.away : match.score.home;
+
+    stats.played++;
+
+    stats.goalsFor += teamGoals;
+    stats.goalsAgainst += rivalGoals;
+
+    if (teamGoals > rivalGoals) {
+      stats.won++;
+      stats.points += 3;
+    } else if (teamGoals < rivalGoals) {
+      stats.lost++;
+    } else {
+      stats.draw++;
+      stats.points += 1;
+    }
+  }
+
+  return stats;
+};

@@ -54,3 +54,12 @@ export const getPlayerById = async (id: string) => {
 
   return player;
 };
+
+export const getTopScorers = async () => {
+  const players = await Players.find()
+    .populate("club", "name shortname")
+    .sort({ "stats.goals": -1 }) 
+    .limit(10); 
+
+  return players;
+};

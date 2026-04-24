@@ -1,9 +1,5 @@
 import connectDB from "@/app/lib/db/db";
 import { finishMatch } from "@/app/lib/service/macth.service";
-import { connect } from "http2"
-
-
-
 
 export const PATCH = async (req: Request,context: { params: Promise<{ id: string }> })=>{
    await connectDB();

@@ -1,18 +1,9 @@
 import mongoose from "mongoose";
 import Match from "../models/match.models";
-import { match } from "assert";
+import { CreateMatchInput } from "../validators/match.schema";
 
-type data = {
-  homeTeam: string;
-  awayTeam: string;
-  date?: Date;
-  time?: string;
-  fieldNumber?: number;
-  status?:"pending"|"finished";
-  goals?: any[];
-};
 
-export const createMatch = async (data: data) => {
+export const createMatch = async (data:CreateMatchInput) => {
   const { homeTeam, awayTeam, date, time, fieldNumber } = data;
 
   if (!homeTeam || !awayTeam || !date || !time || fieldNumber === undefined) {
@@ -69,7 +60,7 @@ export const getMatchById = async (id: string) => {
   }
 };
 
-export const updateMatch = async (id: string, data: data) => {
+export const updateMatch = async (id: string, data: CreateMatchInput) => {
  
   if(!mongoose.Types.ObjectId.isValid(id)) {
     throw new Error("ID inválido");
@@ -123,7 +114,7 @@ const calculateScore = (match: any) => {
 }
 
 
-export const finishMatch = async (id: string , data: data) => {
+export const finishMatch = async (id: string , data: CreateMatchInput) => {
   const match = await Match.findById(id);
 
   if (!match) {

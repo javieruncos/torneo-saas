@@ -63,3 +63,18 @@ export const getTopScorers = async () => {
 
   return players;
 };
+
+
+export const deletePlayer = async (id: string) => {
+  try {
+    const player = await Players.findByIdAndDelete(id);
+
+    if (!player) {
+      throw new Error("El jugador no existe");
+    }
+    
+    return player;
+  } catch (error: any) {
+    throw new Error("Error al eliminar el jugador");
+  }
+};

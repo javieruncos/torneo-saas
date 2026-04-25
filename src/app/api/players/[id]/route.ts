@@ -1,6 +1,7 @@
 import connectDB from "@/app/lib/db/db";
 import mongoose from "mongoose";
 import Players from "@/app/lib/models/players.model";
+import { deletePlayer } from "@/app/lib/service/players.service";
 
 export const GET = async (
   req: Request,
@@ -23,3 +24,5 @@ export const GET = async (
     return Response.json({ error: error.message }, { status: 500 });
   }
 };
+
+

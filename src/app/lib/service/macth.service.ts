@@ -1,27 +1,24 @@
+import { AddStatsInput, UpdateMatchInput } from "./../validators/match.schema";
 import mongoose from "mongoose";
 import Match from "../models/match.models";
 import { CreateMatchInput } from "../validators/match.schema";
 
+export const createMatch = async (data: CreateMatchInput) => {
+  const existMatch = await Match.findOne({
+    homeTeam: data.homeTeam,
+    awayTeam: data.awayTeam,
+    date: data.date,
+    time: data.time,
+    fieldNumber: data.fieldNumber,
+  });
 
-export const createMatch = async (data:CreateMatchInput) => {
-  const { homeTeam, awayTeam, date, time, fieldNumber } = data;
-
-  if (!homeTeam || !awayTeam || !date || !time || fieldNumber === undefined) {
-    throw new Error("Faltan datos");
-  }
-
-  if(homeTeam === awayTeam) {
-    throw new Error("Los equipos deben ser diferentes");
+  if (existMatch) {
+    throw new Error("Ya existe un partido en esa cancha y horario");
   }
 
   try {
     const match = await Match.create({
-      homeTeam,
-      awayTeam,
-      date,
-      time,
-      fieldNumber,
-      status: "pending",
+      ...data,
     });
 
     return match;
@@ -29,7 +26,6 @@ export const createMatch = async (data:CreateMatchInput) => {
     throw new Error(error.message);
   }
 };
-
 
 export const getMatches = async () => {
   try {
@@ -60,9 +56,8 @@ export const getMatchById = async (id: string) => {
   }
 };
 
-export const updateMatch = async (id: string, data: CreateMatchInput) => {
- 
-  if(!mongoose.Types.ObjectId.isValid(id)) {
+export const updateMatch = async (id: string, data: UpdateMatchInput) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new Error("ID inválido");
   }
 
@@ -77,14 +72,9 @@ export const updateMatch = async (id: string, data: CreateMatchInput) => {
       throw new Error("El partido ya ha finalizado");
     }
 
-    if (match.homeTeam === match.awayTeam) {
-      throw new Error("Los equipos deben ser diferentes");
-    }
-
     if (data.date !== undefined) match.date = data.date;
     if (data.time !== undefined) match.time = data.time;
     if (data.fieldNumber !== undefined) match.fieldNumber = data.fieldNumber;
-    
 
     await match.save();
 
@@ -94,27 +84,25 @@ export const updateMatch = async (id: string, data: CreateMatchInput) => {
   }
 };
 
-
 const calculateScore = (match: any) => {
   let homeScore = 0;
   let awayScore = 0;
 
   match.goals.forEach((goal: any | []) => {
-    if (goal.team === match.homeTeam) {
+    if (goal.team.toString() === match.homeTeam.toString()) {
       homeScore++;
-    } else if (goal.team === match.awayTeam) {
+    } else if (goal.team.toString() === match.awayTeam.toString()) {
       awayScore++;
     }
   });
 
   return {
     home: homeScore,
-    away: awayScore
+    away: awayScore,
   };
-}
+};
 
-
-export const finishMatch = async (id: string , data: CreateMatchInput) => {
+export const finishMatch = async (id: string, data: AddStatsInput) => {
   const match = await Match.findById(id);
 
   if (!match) {
@@ -125,20 +113,28 @@ export const finishMatch = async (id: string , data: CreateMatchInput) => {
     throw new Error("El partido ya ha finalizado");
   }
 
-  if (match.homeTeam === match.awayTeam) {
-    throw new Error("Los equipos deben ser diferentes");
+  if (
+    !data.goals &&
+    !data.assists &&
+    !data.yellowCards &&
+    !data.redCards
+  ) {
+    throw new Error("Debes enviar al menos una estadística");
   }
 
-  match.status = "finished";
-  match.goals = data.goals || [];
+  if (data.goals) match.goals.push(...data.goals);
+  if (data.assists) match.assists.push(...data.assists);
+  if (data.yellowCards) match.yellowCards.push(...data.yellowCards);
+  if (data.redCards) match.redCards.push(...data.redCards);
 
   const score = calculateScore(match);
   match.score = score;
 
+  match.status = "finished";
+
   await match.save();
   return match;
-
-}
+};
 
 export const deleteMatch = async (id: string) => {
   try {
@@ -153,8 +149,10 @@ export const deleteMatch = async (id: string) => {
 };
 
 export const getTable = async () => {
-  const matches = await Match.find({ status: "finished" })
-    .populate("homeTeam awayTeam", "name");
+  const matches = await Match.find({ status: "finished" }).populate(
+    "homeTeam awayTeam",
+    "name",
+  );
 
   const table: any = {};
 

@@ -1,20 +1,11 @@
+import { updatePlayerInput } from "./../validators/player.schema";
 import Players from "../models/players.model";
 import Clubes from "../models/teams.model";
 import mongoose from "mongoose";
+import { createPlayerInput } from "../validators/player.schema";
 
-type data = {
-  nombre: string;
-  numero: number;
-  posicion: string;
-  club: string;
-};
-
-export const createPlayer = async (data: data) => {
+export const createPlayer = async (data: createPlayerInput) => {
   const { nombre, numero, posicion, club } = data;
-
-  if (!nombre || !numero || !posicion || !club) {
-    throw new Error("Faltan datos");
-  }
 
   const existsClub = await Clubes.findById(club);
 
@@ -58,12 +49,11 @@ export const getPlayerById = async (id: string) => {
 export const getTopScorers = async () => {
   const players = await Players.find()
     .populate("club", "name shortname")
-    .sort({ "stats.goals": -1 }) 
-    .limit(10); 
+    .sort({ "stats.goals": -1 })
+    .limit(10);
 
   return players;
 };
-
 
 export const deletePlayer = async (id: string) => {
   try {
@@ -72,9 +62,41 @@ export const deletePlayer = async (id: string) => {
     if (!player) {
       throw new Error("El jugador no existe");
     }
-    
+
     return player;
   } catch (error: any) {
-    throw new Error("Error al eliminar el jugador");
+    throw new Error(error.message);
+  }
+};
+
+export const updatePlayer = async (id: string, data: updatePlayerInput) => {
+  try {
+    const player = await Players.findById(id);
+
+    if (!player) {
+      throw new Error("El jugador no existe");
+    }
+
+    const club = data.club ?? player.club;
+    const numero = data.numero ?? player.numero;
+
+    const exists = await Players.findOne({
+      club,
+      numero,
+      _id: { $ne: id },
+    });
+
+    if (exists) {
+      throw new Error("El número ya está ocupado en este club");
+    }
+
+    const updatedPlayer = await Players.findByIdAndUpdate(id, data, {
+      new: true,
+      runValidators: true,
+    });
+
+    return updatedPlayer;
+  } catch (error: any) {
+    throw new Error("Error al actualizar el jugador");
   }
 };

@@ -18,14 +18,14 @@ const baseMatchSchema = z.object({
 });
 
 export const createMatchSchema = baseMatchSchema.extend({
-  status:z.enum(["pending","fiished"]).default("pending")
-}).refine((data)=>{data.homeTeam !== data.awayTeam})
+  status:z.enum(["pending","finished"]).default("pending")
+}).refine((data)=>{data.homeTeam !== data.awayTeam},{message:"Los equipos deben ser diferentes" , path:["homeTeam"]});
 
 export type CreateMatchInput = z.infer<typeof createMatchSchema>;
 
 
 export const updateMatchSchema = baseMatchSchema.partial().extend({
-  status:z.enum(["pending","fiished"]).default("pending")
+  status:z.enum(["pending","fiished"]).optional(),
 }).refine((data)=> !data.homeTeam || !data.awayTeam || data.homeTeam !== data.awayTeam , {message:"Los equipos deben ser diferentes" , path:["homeTeam"]});
 
 
@@ -68,14 +68,14 @@ export const addStatsSchema = z
       .optional(),
   })
   .refine(
-    (data) =>
-      data.goals ||
-      data.assists ||
-      data.yellowCards ||
-      data.redCards,
-    {
-      message: "Debes enviar al menos una estadística",
-    }
-  );
+  (data) =>
+    (data.goals && data.goals.length > 0) ||
+    (data.assists && data.assists.length > 0) ||
+    (data.yellowCards && data.yellowCards.length > 0) ||
+    (data.redCards && data.redCards.length > 0),
+  {
+    message: "Debes enviar al menos una estadística",
+  }
+);
 
 export type AddStatsInput = z.infer<typeof addStatsSchema>;

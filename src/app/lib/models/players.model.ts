@@ -9,8 +9,7 @@ import mongoose from "mongoose";
      },
      numero:{
           type: Number,
-          required: true,
-          trim: true
+          required: true
      },
      posicion: {
           type: String,
